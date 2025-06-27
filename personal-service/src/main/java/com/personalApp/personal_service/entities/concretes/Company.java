@@ -1,0 +1,27 @@
+package com.personalApp.personal_service.entities.concretes;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.List;
+
+@Table(name="companys")
+@Entity
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class Company {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="id",unique=true)
+    private int id;
+    @Column(name="name")
+    private String name;
+
+    @OneToMany(mappedBy = "company")
+    private List<Department> departments;
+
+    @OneToMany(mappedBy = "company")
+    private List<Employee> employees;
+}
