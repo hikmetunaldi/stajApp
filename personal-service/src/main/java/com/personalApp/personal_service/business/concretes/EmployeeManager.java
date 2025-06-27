@@ -1,7 +1,5 @@
 package com.personalApp.personal_service.business.concretes;
 
-import com.personalApp.personal_service.business.abstracts.CompanyService;
-import com.personalApp.personal_service.business.abstracts.DepartmentService;
 import com.personalApp.personal_service.business.abstracts.EmployeeService;
 import com.personalApp.personal_service.business.requests.CreateEmployeeRequest;
 import com.personalApp.personal_service.business.requests.UpdateEmployeeRequest;
@@ -14,8 +12,8 @@ import com.personalApp.personal_service.entities.concretes.Employee;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -23,25 +21,24 @@ public class EmployeeManager implements EmployeeService {
 
     private ModelMapperService modelMapperService;
     private EmployeeRepository employeeRepository;
-    private DepartmentService departmentService;
-    private CompanyService companyService;
     private EmployeeMapper employeeMapper;
 
     public List<GetAllEmployeeResponse> getAll() {
 
         List<Employee> employees = employeeRepository.findAll();
 
-        return employees.stream().map(departmant -> modelMapperService.forResponse().
-                        map(departmant, GetAllEmployeeResponse.class)).collect(Collectors.toList());
+        return employees.stream()
+                .map(employee -> modelMapperService.forResponse()
+                        .map(employee, GetAllEmployeeResponse.class))
+                .sorted(Comparator.comparing(GetAllEmployeeResponse::getId))
+                .toList();
     }
 
     public GetByIdEmployeeResponse getById(int id) {
         Employee employee = employeeRepository.findById(id).orElseThrow();
 
-        GetByIdEmployeeResponse getByIdEmployeeResponse = modelMapperService.forResponse().
+        return modelMapperService.forResponse().
                 map(employee, GetByIdEmployeeResponse.class);
-
-        return getByIdEmployeeResponse;
     }
 
     @Override

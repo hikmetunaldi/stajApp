@@ -1,5 +1,6 @@
 package com.personalApp.personal_service.business.responses;
 
+import com.personalApp.personal_service.constants.Seniority;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,7 @@ public class GetAllEmployeeResponse {
     private String gender;
     private String position;
     private String seniority;
+    private Seniority seniorityy;
 
     private String departmentName;
 

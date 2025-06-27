@@ -1,5 +1,6 @@
 package com.personalApp.personal_service.entities.concretes;
 
+import com.personalApp.personal_service.constants.Seniority;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -38,6 +39,8 @@ public class Employee {
     private String position;
     @Column(name="seniority")
     private String seniority;
+    @Column
+    private Seniority seniorityy;
 
     @ManyToOne
     @JoinColumn(name = "department_id")

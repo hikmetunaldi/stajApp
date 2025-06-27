@@ -38,6 +38,7 @@ public class CreateEmployeeRequest {
     private String gender;
     private String position;
     private String seniority;
+    private int seniorityy;
 
     @NotNull
     @NotBlank
