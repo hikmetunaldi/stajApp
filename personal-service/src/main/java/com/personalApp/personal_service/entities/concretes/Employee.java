@@ -1,6 +1,7 @@
 package com.personalApp.personal_service.entities.concretes;
 
-import com.personalApp.personal_service.constants.Seniority;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.personalApp.shared_model.enums.Seniority;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,7 +24,7 @@ public class Employee {
     private String firstName;
     @Column(name="lastName")
     private String lastName;
-    @Column(name="identityNumber")
+    @Column(name="identityNumber",unique = true)
     private String identityNumber;
     @Column(name="email")
     private String email;
@@ -43,10 +44,12 @@ public class Employee {
     private Seniority seniorityy;
 
     @ManyToOne
+    @JsonBackReference(value = "company-emplooyes")
     @JoinColumn(name = "department_id")
     private Department department;
 
     @ManyToOne
+    @JsonBackReference(value = "department-emplooyes")
     @JoinColumn(name="company_id")
     private Company company;
 

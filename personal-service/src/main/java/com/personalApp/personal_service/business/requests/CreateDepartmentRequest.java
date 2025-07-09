@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateDepartmantRequest {
+public class CreateDepartmentRequest {
 
     @NotBlank
     @NotNull

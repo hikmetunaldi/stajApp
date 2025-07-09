@@ -4,5 +4,9 @@
     <file url="file://$PROJECT_DIR$/eureka-server/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/notification-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/personal-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/shared-model/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/shared-model/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/shared_model/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/shared_model/src/main/resources" charset="UTF-8" />
   </component>
 </project>

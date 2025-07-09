@@ -1,19 +1,20 @@
 package com.personalApp.personal_service.business.concretes;
 
 import com.personalApp.personal_service.business.abstracts.DepartmentService;
-import com.personalApp.personal_service.business.requests.CreateDepartmantRequest;
+import com.personalApp.personal_service.business.requests.CreateDepartmentRequest;
 import com.personalApp.personal_service.business.requests.UpdateDepartmentRequest;
-import com.personalApp.personal_service.business.responses.GetAllDepartmantResponse;
+import com.personalApp.personal_service.business.responses.GetAllDepartmentResponse;
 import com.personalApp.personal_service.business.responses.GetByIdDepartmantResponse;
+import com.personalApp.personal_service.core.utilities.mappers.DepartmentMapper;
 import com.personalApp.personal_service.core.utilities.mappers.ModelMapperService;
 import com.personalApp.personal_service.dataAccess.abstracts.CompanyRepository;
 import com.personalApp.personal_service.dataAccess.abstracts.DepartmentRepository;
-import com.personalApp.personal_service.entities.concretes.Company;
 import com.personalApp.personal_service.entities.concretes.Department;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,21 +27,16 @@ public class DepartmentManager implements DepartmentService {
     private final CompanyRepository companyRepository;
     private ModelMapperService modelMapperService;
     private DepartmentRepository departmentRepository;
+    @Autowired
+    private DepartmentMapper departmentMapper;
 
 
     @Override
-    public List<GetAllDepartmantResponse> getAll(){
+    public List<GetAllDepartmentResponse> getAll(){
         List<Department> departments = departmentRepository.findAll();
-
-        List<GetAllDepartmantResponse> responses = departments.stream().map(department -> {
-            GetAllDepartmantResponse response = new GetAllDepartmantResponse();
-            response.setId(department.getId());
-            response.setName(department.getName());
-            response.setCompanyName(department.getCompany().getName()); // Şu satır kritik!
-            return response;
-        }).collect(Collectors.toList());
-
-        return responses;
+        return departments.stream().map(Department->modelMapperService.forResponse()
+                .map(Department, GetAllDepartmentResponse.class))
+                .sorted(Comparator.comparing(GetAllDepartmentResponse::getId)).toList();
     }
 
 
@@ -54,17 +50,12 @@ public class DepartmentManager implements DepartmentService {
     }
 
     @Override
-    public void add(CreateDepartmantRequest createDepartmantRequest) {
-        Department department = new Department();
-        department.setName(createDepartmantRequest.getName());
+    public void add(CreateDepartmentRequest createDepartmentRequest) {
+        var company = companyRepository.findById(createDepartmentRequest.getCompanyId())
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+                var department = departmentMapper.toEntity(createDepartmentRequest);
 
-        Company company = companyRepository.findById(createDepartmantRequest.getCompanyId())
-                .orElseThrow(() -> new RuntimeException("Company not found!"));
-
-        department.setCompany(company);
-
-        departmentRepository.save(department);
-        System.out.println("Departmant başarıyla eklendi: " + department.getName());
+                departmentRepository.save(department);
     }
 
     public void update(UpdateDepartmentRequest updateDepartmentRequest){

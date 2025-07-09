@@ -1,5 +1,6 @@
 package com.personalApp.personal_service.entities.concretes;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,8 +21,10 @@ public class Company {
     private String name;
 
     @OneToMany(mappedBy = "company")
+    @JsonManagedReference(value = "company-departments")
     private List<Department> departments;
 
     @OneToMany(mappedBy = "company")
+    @JsonManagedReference(value = "company-emplooyess")
     private List<Employee> employees;
 }

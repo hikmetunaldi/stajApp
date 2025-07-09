@@ -4,7 +4,7 @@ import com.personalApp.personal_service.business.requests.CreateEmployeeRequest;
 import com.personalApp.personal_service.business.requests.UpdateEmployeeRequest;
 import com.personalApp.personal_service.business.responses.GetAllEmployeeResponse;
 import com.personalApp.personal_service.business.responses.GetByIdEmployeeResponse;
-import com.personalApp.personal_service.business.responses.GetByPositionEmployeeResponse;
+import com.personalApp.personal_service.entities.concretes.Employee;
 
 import java.util.List;
 
@@ -16,4 +16,6 @@ public interface EmployeeService {
     void add(CreateEmployeeRequest createEmployeeRequest);
     void update(UpdateEmployeeRequest updateEmployeeRequest);
     void delete(int id);
+    Employee findByIdentityNumber(String identityNumber);
+    List<Employee> findByFirstNameAndLastName(String firstName, String lastName);
 }

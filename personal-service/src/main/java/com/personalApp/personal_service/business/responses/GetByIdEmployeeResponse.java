@@ -1,5 +1,6 @@
 package com.personalApp.personal_service.business.responses;
 
+import com.personalApp.shared_model.enums.Seniority;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,12 +20,13 @@ public class GetByIdEmployeeResponse {
     private String phoneNumber;
     private String address;
     private double salary;
-    private LocalDate dateOfBirth;
-    private LocalDate hireDate;
-    private LocalDate exitDate;
+//    private LocalDate dateOfBirth;
+//    private LocalDate hireDate;
+//    private LocalDate exitDate;
     private String gender;
     private String position;
     private String seniority;
+    private Seniority seniorityy;
 
     private String departmantName;
 }

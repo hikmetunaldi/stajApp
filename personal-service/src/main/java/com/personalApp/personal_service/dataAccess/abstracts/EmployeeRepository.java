@@ -4,10 +4,11 @@ import com.personalApp.personal_service.entities.concretes.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
-    List<Employee> findByIdentityNumber(String identityNumber);
+    Optional<Employee> findByIdentityNumber(String identityNumber);
 
-    List<Employee> findByFirstNameAndLastName(String firstName, String lastName);
+    Optional<List<Employee>> findByFirstNameAndLastName(String firstName, String lastName);
 }

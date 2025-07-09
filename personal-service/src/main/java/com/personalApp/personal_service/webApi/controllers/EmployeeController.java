@@ -5,6 +5,7 @@ import com.personalApp.personal_service.business.requests.CreateEmployeeRequest;
 import com.personalApp.personal_service.business.requests.UpdateEmployeeRequest;
 import com.personalApp.personal_service.business.responses.GetAllEmployeeResponse;
 import com.personalApp.personal_service.business.responses.GetByIdEmployeeResponse;
+import com.personalApp.personal_service.entities.concretes.Employee;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -44,6 +45,21 @@ public class EmployeeController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable int id){
         this.employeeService.delete(id);
+    }
+
+//    @GetMapping("/identity/{identityNumber}")
+//    public List<Employee> findByIdentityNumber(@RequestParam String identityNumber){
+//        return employeeService.findByIdentityNumber(identityNumber);
+//    }
+    @GetMapping("/identity")
+    public Employee findByIdentityNumber(@RequestParam String identityNumber) {
+        return employeeService.findByIdentityNumber(identityNumber);
+    }
+
+
+    @GetMapping("/by-firstName-lastName")
+    public List<Employee> findByFirstNameAndLastName(@RequestParam String firstName, @RequestParam String lastName){
+        return employeeService.findByFirstNameAndLastName(firstName, lastName);
     }
 
 }

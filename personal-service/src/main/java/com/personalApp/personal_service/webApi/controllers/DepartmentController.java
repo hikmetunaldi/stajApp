@@ -1,9 +1,9 @@
 package com.personalApp.personal_service.webApi.controllers;
 
 import com.personalApp.personal_service.business.abstracts.DepartmentService;
-import com.personalApp.personal_service.business.requests.CreateDepartmantRequest;
+import com.personalApp.personal_service.business.requests.CreateDepartmentRequest;
 import com.personalApp.personal_service.business.requests.UpdateDepartmentRequest;
-import com.personalApp.personal_service.business.responses.GetAllDepartmantResponse;
+import com.personalApp.personal_service.business.responses.GetAllDepartmentResponse;
 import com.personalApp.personal_service.business.responses.GetByIdDepartmantResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,7 +19,7 @@ public class DepartmentController {
     private DepartmentService departmentService;
 
     @GetMapping
-    public List<GetAllDepartmantResponse> getAll(){
+    public List<GetAllDepartmentResponse> getAll(){
         return departmentService.getAll();
     }
 
@@ -30,8 +30,8 @@ public class DepartmentController {
 
     @PostMapping
     @ResponseStatus(code= HttpStatus.CREATED)
-    public void add(@RequestBody CreateDepartmantRequest createDepartmantRequest){
-        this.departmentService.add(createDepartmantRequest);
+    public void add(@RequestBody CreateDepartmentRequest createDepartmentRequest){
+        this.departmentService.add(createDepartmentRequest);
     }
 
     @PutMapping

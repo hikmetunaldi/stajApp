@@ -1,5 +1,7 @@
 package com.personalApp.personal_service.entities.concretes;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,12 +25,12 @@ public class Department {
     private String name;
 
     @ManyToOne
+    @JsonBackReference(value = "company-departments")
     @JoinColumn(name="company_id")
     private Company company;
 
     @OneToMany(mappedBy = "department")
+    @JsonManagedReference(value = "department-employees")
     private List<Employee> employees;
-
-
 
 }

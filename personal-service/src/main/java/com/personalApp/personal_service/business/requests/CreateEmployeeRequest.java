@@ -32,9 +32,9 @@ public class CreateEmployeeRequest {
     private String phoneNumber;
     private String address;
     private double salary;
-    private LocalDate dateOfBirth;
-    private LocalDate hireDate;
-    private LocalDate exitDate;
+//    private LocalDate dateOfBirth;
+//    private LocalDate hireDate;
+//    private LocalDate exitDate;
     private String gender;
     private String position;
     private String seniority;

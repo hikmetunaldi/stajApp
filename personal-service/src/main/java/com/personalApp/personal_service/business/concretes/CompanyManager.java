@@ -11,6 +11,7 @@ import com.personalApp.personal_service.entities.concretes.Company;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,11 +25,9 @@ public class CompanyManager implements CompanyService {
     public List<GetAllCompanyResponse> getAll(){
         List<Company> companies =  companyRepository.findAll();
 
-        List<GetAllCompanyResponse> getAllCompanyResponses = companies.stream().
-                map(company -> this.modelMapperService.forResponse().
-                map(company,GetAllCompanyResponse.class)).collect(Collectors.toList());
-
-        return getAllCompanyResponses;
+        return companies.stream().map(Company -> modelMapperService.forResponse()
+                .map(Company,GetAllCompanyResponse.class ))
+                .sorted(Comparator.comparing(GetAllCompanyResponse::getId)).toList();
     }
 
     public GetByIdCompanyResponse getById(int id){
