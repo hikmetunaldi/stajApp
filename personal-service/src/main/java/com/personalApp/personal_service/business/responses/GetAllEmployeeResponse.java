@@ -25,10 +25,11 @@ public class GetAllEmployeeResponse {
 //    private LocalDate exitDate;
     private String gender;
     private String position;
-    private String seniority;
-    private Seniority seniorityy;
+    //private String seniority;
+    private Seniority seniority;
 
     private String departmentName;
     private String companyName;
+
 
 }

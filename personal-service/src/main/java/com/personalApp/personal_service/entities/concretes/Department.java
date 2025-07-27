@@ -10,7 +10,7 @@ import lombok.Setter;
 
 import java.util.List;
 
-@Table(name="departmants")
+@Table(name="departments")
 @Entity
 @Getter
 @Setter

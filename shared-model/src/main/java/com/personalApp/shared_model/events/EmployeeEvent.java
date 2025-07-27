@@ -23,8 +23,8 @@ public class EmployeeEvent {
     private double salary;
     private String gender;
     private String position;
-    private String seniority;
-    private Seniority seniorityy;
+    private Seniority seniority;
+    //private Seniority seniorityy;
     private ChangeType changeType;
     private int departmentId;
     private int companyId;

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -22,41 +21,37 @@ public class CompanyManager implements CompanyService {
     private CompanyRepository companyRepository;
     private ModelMapperService modelMapperService;
 
-    public List<GetAllCompanyResponse> getAll(){
-        List<Company> companies =  companyRepository.findAll();
+    public List<GetAllCompanyResponse> getAll() {
+        List<Company> companies = companyRepository.findAll();
 
         return companies.stream().map(Company -> modelMapperService.forResponse()
-                .map(Company,GetAllCompanyResponse.class ))
+                        .map(Company, GetAllCompanyResponse.class))
                 .sorted(Comparator.comparing(GetAllCompanyResponse::getId)).toList();
     }
 
-    public GetByIdCompanyResponse getById(int id){
-        Company company = this.companyRepository.findById(id).orElseThrow();
-        GetByIdCompanyResponse getByIdCompanyResponse = this.modelMapperService
-                .forResponse().map(company,GetByIdCompanyResponse.class);
-        return getByIdCompanyResponse;
+    public GetByIdCompanyResponse getById(int id) {
+        Company company = companyRepository.findById(id).orElseThrow();
+        return modelMapperService.forResponse().map(company, GetByIdCompanyResponse.class);
     }
 
-    public void add(CreateCompanyRequest createCompanyRequest){
-        Company company = this.modelMapperService.forRequest().map(createCompanyRequest,Company.class);
-        this.companyRepository.save(company);
+    public void add(CreateCompanyRequest createCompanyRequest) {
+        Company company = this.modelMapperService.forRequest().map(createCompanyRequest, Company.class);
+        companyRepository.save(company);
     }
 
-    public void update(UpdateCompanyRequest updateCompanyRequest){
-        Company company = this.modelMapperService.forRequest().map(updateCompanyRequest,Company.class);
+    public void update(UpdateCompanyRequest updateCompanyRequest) {
+        Company company = this.modelMapperService.forRequest().map(updateCompanyRequest, Company.class);
 
-        this.companyRepository.save(company);
+        companyRepository.save(company);
     }
 
-
-    public void delete(int id){
-        this.companyRepository.deleteById(id);
+    public void delete(int id) {
+        companyRepository.deleteById(id);
     }
 
     @Override
     public Company getCompanyById(int id) {
         return companyRepository.findById(id).orElseThrow();
     }
-
 
 }

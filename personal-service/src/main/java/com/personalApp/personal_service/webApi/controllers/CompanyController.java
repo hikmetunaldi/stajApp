@@ -11,9 +11,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/companys")
+@RequestMapping("/api/companies")
 public class CompanyController {
 
     private CompanyService companyService;

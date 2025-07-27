@@ -25,8 +25,9 @@ public class GetByIdEmployeeResponse {
 //    private LocalDate exitDate;
     private String gender;
     private String position;
-    private String seniority;
-    private Seniority seniorityy;
+//    private String seniority;
+    private Seniority seniority;
 
     private String departmantName;
+    private String companyName;
 }

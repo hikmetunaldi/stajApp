@@ -15,9 +15,17 @@ public class EmployeeKafkaProducer implements EmployeeKafkaProducerService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmployeeKafkaProducer.class);
 
-    private final KafkaTemplate<String, EmployeeEvent> kafkaTemplate;
+//    private final KafkaTemplate<String, EmployeeEvent> kafkaTemplate;
+//    private final String topicName = "employee-events";
+//
+//
+//    @Override
+//    public void sendMessage(EmployeeEvent employeeEvent) {
+//        logger.info("Sending message to Kafka topic {}: {}", topicName, employeeEvent);
+//        kafkaTemplate.send(topicName, employeeEvent);
+//    }
+private final KafkaTemplate<String, EmployeeEvent> kafkaTemplate;
     private final String topicName = "employee-events";
-
 
     @Override
     public void sendMessage(EmployeeEvent employeeEvent) {

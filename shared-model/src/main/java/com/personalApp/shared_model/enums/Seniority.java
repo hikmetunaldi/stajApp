@@ -1,6 +1,9 @@
 package com.personalApp.shared_model.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
+
+import java.util.Arrays;
 
 @Getter
 public enum Seniority {
@@ -16,6 +19,10 @@ public enum Seniority {
         this.value = value;
     }
 
+    public int getValue() {
+        return value;
+    }
+
     public static Seniority fromValue(int value) {
         for (Seniority s : Seniority.values()) {
             if (s.getValue() == value) {
@@ -23,5 +30,12 @@ public enum Seniority {
             }
         }
         throw new IllegalArgumentException("Invalid seniority value: " + value);
+    }
+    @JsonCreator
+    public static Seniority fromString(String key) {
+        return Arrays.stream(Seniority.values())
+                .filter(e -> e.name().equalsIgnoreCase(key))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Invalid seniority value: " + key));
     }
 }

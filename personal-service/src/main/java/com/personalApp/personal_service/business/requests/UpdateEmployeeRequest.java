@@ -1,5 +1,6 @@
 package com.personalApp.personal_service.business.requests;
 
+import com.personalApp.shared_model.enums.Seniority;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateEmployeeRequest {
+
     private int id;
     private String firstName;
     private String lastName;
@@ -17,15 +19,16 @@ public class UpdateEmployeeRequest {
     private String email;
     private String phoneNumber;
     private String address;
-    private double salary;
+    private Double salary;
 //    private LocalDate dateOfBirth;
 //    private LocalDate hireDate;
 //    private LocalDate exitDate;
     private String gender;
     private String position;
-    private String seniority;
-    private int seniorityy;
+//    private String seniority;
+//    private int seniorityy;
+    private Seniority seniority;
 
-    private int departmentId;
-    private int companyId;
+    private Integer departmentId;
+    private Integer companyId;
 }

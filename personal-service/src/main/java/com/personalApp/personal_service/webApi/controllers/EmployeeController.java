@@ -3,6 +3,7 @@ package com.personalApp.personal_service.webApi.controllers;
 import com.personalApp.personal_service.business.abstracts.EmployeeService;
 import com.personalApp.personal_service.business.requests.CreateEmployeeRequest;
 import com.personalApp.personal_service.business.requests.UpdateEmployeeRequest;
+import com.personalApp.personal_service.business.responses.FindEmployeesByDepartmentResponse;
 import com.personalApp.personal_service.business.responses.GetAllEmployeeResponse;
 import com.personalApp.personal_service.business.responses.GetByIdEmployeeResponse;
 import com.personalApp.personal_service.entities.concretes.Employee;
@@ -11,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@CrossOrigin(origins = "http://localhost:5173")
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/employees")
@@ -32,7 +33,7 @@ public class EmployeeController {
 
     @PostMapping
     @ResponseStatus(code= HttpStatus.CREATED)
-    public void add(CreateEmployeeRequest createEmployeeRequest ){
+    public void add(@RequestBody CreateEmployeeRequest createEmployeeRequest ){
         this.employeeService.add(createEmployeeRequest);
     }
 
@@ -56,10 +57,22 @@ public class EmployeeController {
         return employeeService.findByIdentityNumber(identityNumber);
     }
 
-
-    @GetMapping("/by-firstName-lastName")
-    public List<Employee> findByFirstNameAndLastName(@RequestParam String firstName, @RequestParam String lastName){
-        return employeeService.findByFirstNameAndLastName(firstName, lastName);
+    @GetMapping("/find/by-department/{departmentId}")
+    public List<FindEmployeesByDepartmentResponse> findByDepartmentId(@PathVariable int departmentId) {
+        return employeeService.findEmployeesByDepartmentId(departmentId);
     }
 
+
+    @GetMapping("/by-firstName-lastName")
+    public List<Employee> findByFirstNameAndLastName(@RequestParam (required = false) String firstName,
+                                                     @RequestParam (required = false) String lastName){
+        return employeeService.findByFirstNameAndLastName(setIfNameIsNullOrEmpty(firstName), setIfNameIsNullOrEmpty(lastName));
+    }
+
+    private String setIfNameIsNullOrEmpty(String str){
+        if(str == null || str.isEmpty()){
+            return " ";
+        }
+        return str;
+    }
 }

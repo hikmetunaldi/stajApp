@@ -1,5 +1,6 @@
 package com.personalApp.personal_service.business.requests;
 
+import com.personalApp.shared_model.enums.Seniority;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -17,34 +18,38 @@ public class CreateEmployeeRequest {
     @NotNull
     @NotBlank
     private String firstName;
+
     @NotNull
     @NotBlank
     private String lastName;
+
     @NotNull
     @NotBlank
     @Size(min = 11, max = 11)
     private String identityNumber;
+
     @NotNull
     @NotBlank
     private String email;
+
     @NotNull
     @NotBlank
     private String phoneNumber;
+
     private String address;
     private double salary;
-//    private LocalDate dateOfBirth;
-//    private LocalDate hireDate;
-//    private LocalDate exitDate;
+    // private LocalDate dateOfBirth;
+    // private LocalDate hireDate;
+    // private LocalDate exitDate;
     private String gender;
     private String position;
-    private String seniority;
-    private int seniorityy;
+    private Seniority seniority;
 
     @NotNull
-    @NotBlank
-    private int departmentId;
+    private Integer departmentId;  // primitive yerine wrapper kullandım
 
     @NotNull
-    @NotBlank
-    private int companyId;
+    private Integer companyId;
+
+    // Getter ve Setter metodlarını eklemeyi unutma
 }
