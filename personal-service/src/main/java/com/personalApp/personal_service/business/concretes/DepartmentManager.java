@@ -4,7 +4,7 @@ import com.personalApp.personal_service.business.abstracts.DepartmentService;
 import com.personalApp.personal_service.business.requests.CreateDepartmentRequest;
 import com.personalApp.personal_service.business.requests.UpdateDepartmentRequest;
 import com.personalApp.personal_service.business.responses.GetAllDepartmentResponse;
-import com.personalApp.personal_service.business.responses.GetByIdDepartmantResponse;
+import com.personalApp.personal_service.business.responses.GetByIdDepartmentResponse;
 import com.personalApp.personal_service.core.utilities.mappers.DepartmentMapper;
 import com.personalApp.personal_service.core.utilities.mappers.ModelMapperService;
 import com.personalApp.personal_service.dataAccess.abstracts.CompanyRepository;
@@ -12,7 +12,6 @@ import com.personalApp.personal_service.dataAccess.abstracts.DepartmentRepositor
 import com.personalApp.personal_service.entities.concretes.Department;
 import com.personalApp.personal_service.helpers.exceptions.DepartmentNotFoundException;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -37,10 +36,10 @@ public class DepartmentManager implements DepartmentService {
     }
 
 
-    public GetByIdDepartmantResponse getById(int id) {
-        Department department = departmentRepository.findById(id).orElseThrow(()->new DepartmentNotFoundException(id));
+    public GetByIdDepartmentResponse getById(int id) {
+        Department department = departmentRepository.findById(id).orElseThrow(() -> new DepartmentNotFoundException(id));
 
-        return modelMapperService.forResponse().map(department, GetByIdDepartmantResponse.class);
+        return modelMapperService.forResponse().map(department, GetByIdDepartmentResponse.class);
     }
 
     @Override
@@ -65,7 +64,7 @@ public class DepartmentManager implements DepartmentService {
 
     @Override
     public Department getDepartmentById(int id) {
-        return departmentRepository.findById(id).orElseThrow(()->new DepartmentNotFoundException(id));
+        return departmentRepository.findById(id).orElseThrow(() -> new DepartmentNotFoundException(id));
     }
 
 }

@@ -10,7 +10,7 @@ public enum ChangeType {
 
     private final int value;
 
-    ChangeType(int value){
+    ChangeType(int value) {
         this.value = value;
     }
 

@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,13 +18,8 @@ public class UpdateEmployeeRequest {
     private String phoneNumber;
     private String address;
     private Double salary;
-//    private LocalDate dateOfBirth;
-//    private LocalDate hireDate;
-//    private LocalDate exitDate;
     private String gender;
     private String position;
-//    private String seniority;
-//    private int seniorityy;
     private Seniority seniority;
 
     private Integer departmentId;

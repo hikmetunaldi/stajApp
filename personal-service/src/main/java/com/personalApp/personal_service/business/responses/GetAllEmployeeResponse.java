@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,12 +18,8 @@ public class GetAllEmployeeResponse {
     private String phoneNumber;
     private String address;
     private double salary;
-//    private LocalDate dateOfBirth;
-//    private LocalDate hireDate;
-//    private LocalDate exitDate;
     private String gender;
     private String position;
-    //private String seniority;
     private Seniority seniority;
 
     private String departmentName;

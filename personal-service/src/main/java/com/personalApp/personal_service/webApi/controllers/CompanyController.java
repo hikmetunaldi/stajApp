@@ -20,32 +20,30 @@ public class CompanyController {
     private CompanyService companyService;
 
     @GetMapping
-    public List<GetAllCompanyResponse> getALL(){
+    public List<GetAllCompanyResponse> getALL() {
         return companyService.getAll();
     }
 
     @GetMapping("/{id}")
-    public GetByIdCompanyResponse getById(@PathVariable int id){
+    public GetByIdCompanyResponse getById(@PathVariable int id) {
         return companyService.getById(id);
     }
 
 
-
-
     @PostMapping
-    @ResponseStatus(code=HttpStatus.CREATED)
-    public void add(@RequestBody CreateCompanyRequest createCompanyRequest){
-        this.companyService.add(createCompanyRequest);
+    @ResponseStatus(code = HttpStatus.CREATED)
+    public void add(@RequestBody CreateCompanyRequest createCompanyRequest) {
+        companyService.add(createCompanyRequest);
     }
 
     @PutMapping
-    public void update(@RequestBody UpdateCompanyRequest updateCompanyRequest){
-        this.companyService.update(updateCompanyRequest);
+    public void update(@RequestBody UpdateCompanyRequest updateCompanyRequest) {
+        companyService.update(updateCompanyRequest);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id){
-        this.companyService.delete(id);
+    public void delete(@PathVariable int id) {
+        companyService.delete(id);
     }
 
 

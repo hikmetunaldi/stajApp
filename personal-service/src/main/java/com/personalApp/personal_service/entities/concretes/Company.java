@@ -2,11 +2,14 @@ package com.personalApp.personal_service.entities.concretes;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
-@Table(name="companies")
+@Table(name = "companies")
 @Entity
 @Getter
 @Setter
@@ -15,9 +18,9 @@ import java.util.List;
 public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id",unique=true)
+    @Column(name = "id", unique = true)
     private int id;
-    @Column(name="name")
+    @Column(name = "name")
     private String name;
 
     @OneToMany(mappedBy = "company")
@@ -25,6 +28,6 @@ public class Company {
     private List<Department> departments;
 
     @OneToMany(mappedBy = "company")
-    @JsonManagedReference(value = "company-emplooyess")
+    @JsonManagedReference(value = "company-employees")
     private List<Employee> employees;
 }

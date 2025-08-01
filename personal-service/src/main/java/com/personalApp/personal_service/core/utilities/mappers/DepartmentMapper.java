@@ -8,17 +8,17 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@Mapper(componentModel="spring")
+@Mapper(componentModel = "spring")
 public abstract class DepartmentMapper {
 
     @Mapping(source = "companyId", target = "company")
     public abstract Department toEntity(CreateDepartmentRequest dto);
 
 
-    protected Company mapCompany (Integer id){
-        return companyRepository.findById(id).orElseThrow(()->new RuntimeException("Company not found with ID:" +id ));
+    protected Company mapCompany(Integer id) {
+        return companyRepository.findById(id).orElseThrow(() -> new RuntimeException("Company not found with ID:" + id));
     }
 
-    @Autowired
+
     protected CompanyRepository companyRepository;
 }

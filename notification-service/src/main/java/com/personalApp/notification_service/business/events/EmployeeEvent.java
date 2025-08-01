@@ -1,4 +1,5 @@
 package com.personalApp.notification_service.business.events;
+
 import com.personalApp.shared_model.enums.ChangeType;
 import com.personalApp.shared_model.enums.Seniority;
 import lombok.Getter;
@@ -20,8 +21,7 @@ public class EmployeeEvent implements Serializable {
     private double salary;
     private String gender;
     private String position;
-    private String seniority;
-    private Seniority seniorityy;
+    private Seniority seniority;
     private int departmentId;
     private int companyId;
 

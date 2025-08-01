@@ -4,7 +4,6 @@ import com.personalApp.shared_model.enums.Seniority;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
-import javax.print.attribute.Attribute;
 import java.util.Objects;
 
 @Converter(autoApply = true)

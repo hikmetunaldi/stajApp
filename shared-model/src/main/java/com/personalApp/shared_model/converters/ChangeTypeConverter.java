@@ -10,12 +10,12 @@ import java.util.Objects;
 public class ChangeTypeConverter implements AttributeConverter<ChangeType, Integer> {
 
     @Override
-    public Integer convertToDatabaseColumn(ChangeType attribute){
+    public Integer convertToDatabaseColumn(ChangeType attribute) {
         return Objects.nonNull(attribute) ? attribute.getValue() : null;
     }
 
     @Override
-    public ChangeType convertToEntityAttribute(Integer dbData){
+    public ChangeType convertToEntityAttribute(Integer dbData) {
         return Objects.nonNull(dbData) ? ChangeType.fromValue(dbData) : null;
     }
 }

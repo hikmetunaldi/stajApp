@@ -10,7 +10,7 @@ import lombok.Setter;
 
 import java.util.List;
 
-@Table(name="departments")
+@Table(name = "departments")
 @Entity
 @Getter
 @Setter
@@ -18,15 +18,15 @@ import java.util.List;
 @NoArgsConstructor
 public class Department {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
-    @Column(name="name")
+    @Column(name = "name")
     private String name;
 
     @ManyToOne
     @JsonBackReference(value = "company-departments")
-    @JoinColumn(name="company_id")
+    @JoinColumn(name = "company_id")
     private Company company;
 
     @OneToMany(mappedBy = "department")

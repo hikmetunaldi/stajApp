@@ -4,9 +4,7 @@ import com.personalApp.personal_service.business.abstracts.EmployeeService;
 import com.personalApp.personal_service.business.concretes.kafka.EmployeeKafkaProducer;
 import com.personalApp.personal_service.business.requests.CreateEmployeeRequest;
 import com.personalApp.personal_service.business.requests.UpdateEmployeeRequest;
-import com.personalApp.personal_service.business.responses.FindEmployeesByDepartmentResponse;
-import com.personalApp.personal_service.business.responses.GetAllEmployeeResponse;
-import com.personalApp.personal_service.business.responses.GetByIdEmployeeResponse;
+import com.personalApp.personal_service.business.responses.*;
 import com.personalApp.personal_service.core.utilities.mappers.EmployeeMapper;
 import com.personalApp.personal_service.core.utilities.mappers.ModelMapperService;
 import com.personalApp.personal_service.dataAccess.abstracts.CompanyRepository;
@@ -52,7 +50,7 @@ public class EmployeeManager implements EmployeeService {
 
     public GetByIdEmployeeResponse getById(int id) {
         var employee = employeeRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("Employee not found with id:" +id));
+                .orElseThrow(() -> new RuntimeException("Employee not found with id:" + id));
 
         return modelMapperService.forResponse().map(employee, GetByIdEmployeeResponse.class);
     }
@@ -73,39 +71,16 @@ public class EmployeeManager implements EmployeeService {
 
         var employee = employeeMapper.toEntity(createEmployeeRequest);
 
-        // Burada eksik olan kısım:
         employee.setDepartment(department);
         employee.setCompany(company);
-        //employee.setSeniority(createEmployeeRequest.getSeniority().getValue());
+
 
         employeeRepository.save(employee);
     }
 
 
     public void update(UpdateEmployeeRequest updateEmployeeRequest) {
-//        var employee = modelMapperService.forRequest().
-//                map(updateEmployeeRequest, Employee.class);
-//
-//        employeeRepository.save(employee);
-//
-//        EmployeeEvent employeeEvent = new EmployeeEvent();
-//
-//        employeeEvent.setId(employee.getId());
-//        employeeEvent.setIdentityNumber(employee.getIdentityNumber());
-//        employeeEvent.setFirstName(employee.getFirstName());
-//        employeeEvent.setLastName(employee.getLastName());
-//        employeeEvent.setEmail(employee.getEmail());
-//        employeeEvent.setPhoneNumber(employee.getPhoneNumber());
-//        employeeEvent.setAddress(employee.getAddress());
-//        employeeEvent.setGender(employee.getGender());
-//        employeeEvent.setSalary(employee.getSalary());
-//        employeeEvent.setPosition(employee.getPosition());
-//        employeeEvent.setSeniority(employee.getSeniority());
-//        employeeEvent.setChangeType(ChangeType.UPDATE);
-//        employeeEvent.setDepartmentId(employee.getDepartment().getId());
-//        employeeEvent.setCompanyId(employee.getCompany().getId());
-//
-//        employeeKafkaProducer.sendMessage(employeeEvent);
+
         Employee existingEmployee = employeeRepository.findById(updateEmployeeRequest.getId())
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
@@ -152,10 +127,8 @@ public class EmployeeManager implements EmployeeService {
         }
 
 
-        // 3. Kaydet
         employeeRepository.save(existingEmployee);
 
-        // 4. Kafka event oluştur ve gönder
         EmployeeEvent employeeEvent = new EmployeeEvent();
         employeeEvent.setId(existingEmployee.getId());
         employeeEvent.setIdentityNumber(existingEmployee.getIdentityNumber());
@@ -181,10 +154,13 @@ public class EmployeeManager implements EmployeeService {
     }
 
     @Override
-    public Employee findByIdentityNumber(String identityNumber) {
-        return employeeRepository.findByIdentityNumber(identityNumber)
-                .orElseThrow(() -> new EmployeeIdentityNotFoundException(identityNumber));
+    public FindEmployeesByIdentityNumber findByIdentityNumber(String identityNumber) {
+        var employee = employeeRepository.findByIdentityNumber(identityNumber)
+                .orElseThrow(() -> new RuntimeException("Employee not found with identity number: " + identityNumber));
+
+        return modelMapperService.forResponse().map(employee, FindEmployeesByIdentityNumber.class);
     }
+
 
     @Override
     public List<FindEmployeesByDepartmentResponse> findEmployeesByDepartmentId(int departmentId) {
@@ -193,21 +169,42 @@ public class EmployeeManager implements EmployeeService {
 
         List<Employee> employees = employeeRepository.findEmployeesByDepartment(department);
 
-        if (employees.isEmpty()){
+        if (employees.isEmpty()) {
             throw new NoEmployeesInDepartmentException(departmentId);
         }
 
         ModelMapper modelMapper = modelMapperService.forResponse();
-            return employees.stream().
-                    map(employee -> modelMapper.map(employee, FindEmployeesByDepartmentResponse.class)).
-                    collect(Collectors.toList());
+        return employees.stream().
+                map(employee -> modelMapper.map(employee, FindEmployeesByDepartmentResponse.class)).
+                collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FindEmployeesByCompanyResponse> findEmployeesByCompanyId(int companyId){
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(()-> new CompanyNotFoundException(companyId));
+
+        List<Employee> employees = employeeRepository.findEmployeesByCompany(company);
+
+        if(employees.isEmpty()){
+            throw new NoEmployeesInCompanyException(companyId);
+        }
+
+        ModelMapper modelMapper = modelMapperService.forResponse();
+        return employees.stream()
+                .map(employee -> modelMapper.map(employee,FindEmployeesByCompanyResponse.class))
+                .collect(Collectors.toList());
     }
 
 
     @Override
-    public List<Employee> findByFirstNameAndLastName(String firstName, String lastName) {
-        return employeeRepository.findByFirstNameAndLastName(firstName, lastName).orElseThrow
-                (() -> new RuntimeException("User not found with firstName" + firstName + "and lastName" + lastName));
+    public List<FindEmployeesByFirstNameAndLastName> findByFirstNameAndLastName(String firstName, String lastName) {
+        List<Employee> employees = employeeRepository.findByFirstNameAndLastName(firstName,lastName)
+                .orElseThrow(()-> new RuntimeException("Employee not found with firstname:" +firstName+ "and lastname" +lastName));
+
+        return employees.stream()
+                .map(employee->modelMapperService.forResponse().map(employee, FindEmployeesByFirstNameAndLastName.class))
+                .collect(Collectors.toList());
     }
 
 }

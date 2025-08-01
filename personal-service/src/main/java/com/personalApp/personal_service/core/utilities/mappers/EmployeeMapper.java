@@ -17,19 +17,19 @@ public abstract class EmployeeMapper {
     @Mapping(source = "departmentId", target = "department")
     public abstract Employee toEntity(CreateEmployeeRequest dto);
 
-    // CompanyId'den Company entity'sini getir
+
     protected Company mapCompany(Integer id) {
         return companyRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Company not found with ID: " + id));
     }
 
-    // DepartmentId'den Department entity'sini getir
+
     protected Department mapDepartment(Integer id) {
         return departmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Department not found with ID: " + id));
     }
 
-    // Repositories
+
     @Autowired
     protected CompanyRepository companyRepository;
 

@@ -31,6 +31,7 @@ public enum Seniority {
         }
         throw new IllegalArgumentException("Invalid seniority value: " + value);
     }
+
     @JsonCreator
     public static Seniority fromString(String key) {
         return Arrays.stream(Seniority.values())

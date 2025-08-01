@@ -8,8 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -38,18 +36,15 @@ public class CreateEmployeeRequest {
 
     private String address;
     private double salary;
-    // private LocalDate dateOfBirth;
-    // private LocalDate hireDate;
-    // private LocalDate exitDate;
     private String gender;
     private String position;
     private Seniority seniority;
 
     @NotNull
-    private Integer departmentId;  // primitive yerine wrapper kullandım
+    private Integer departmentId;
 
     @NotNull
     private Integer companyId;
 
-    // Getter ve Setter metodlarını eklemeyi unutma
+
 }
