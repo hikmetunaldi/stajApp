@@ -19,10 +19,6 @@ public enum Seniority {
         this.value = value;
     }
 
-    public int getValue() {
-        return value;
-    }
-
     public static Seniority fromValue(int value) {
         for (Seniority s : Seniority.values()) {
             if (s.getValue() == value) {

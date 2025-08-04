@@ -18,6 +18,4 @@ public interface CompanyService {
     void update(UpdateCompanyRequest updateCompanyRequest);
 
     void delete(int id);
-
-    Company getCompanyById(int id);
 }

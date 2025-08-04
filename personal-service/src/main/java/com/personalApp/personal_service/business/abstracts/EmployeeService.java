@@ -3,10 +3,8 @@ package com.personalApp.personal_service.business.abstracts;
 import com.personalApp.personal_service.business.requests.CreateEmployeeRequest;
 import com.personalApp.personal_service.business.requests.UpdateEmployeeRequest;
 import com.personalApp.personal_service.business.responses.*;
-import com.personalApp.personal_service.entities.concretes.Employee;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface EmployeeService {
 
@@ -27,4 +25,10 @@ public interface EmployeeService {
     List<FindEmployeesByDepartmentResponse> findEmployeesByDepartmentId(int departmentId);
 
     List<FindEmployeesByCompanyResponse> findEmployeesByCompanyId(int companyId);
+
+    List<FindEmployeesByFirstName> findEmployeesByFirstName(String firstName);
+
+    List<FindEmployeesByLastName> findEmployeesByLastName(String lastName);
+
+    List<FindEmployeesByCompanyIdAndDepartmentId> findEmployeesByCompanyIdAndDepartmentId(int companyId, int departmentId);
 }

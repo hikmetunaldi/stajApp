@@ -1,38 +1,57 @@
 package com.personalApp.personal_service.core.utilities.mappers;
 
 import com.personalApp.personal_service.business.requests.CreateEmployeeRequest;
-import com.personalApp.personal_service.dataAccess.abstracts.CompanyRepository;
-import com.personalApp.personal_service.dataAccess.abstracts.DepartmentRepository;
-import com.personalApp.personal_service.entities.concretes.Company;
-import com.personalApp.personal_service.entities.concretes.Department;
+import com.personalApp.personal_service.business.requests.UpdateEmployeeRequest;
+import com.personalApp.personal_service.business.responses.*;
 import com.personalApp.personal_service.entities.concretes.Employee;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public abstract class EmployeeMapper {
-
-    @Mapping(source = "companyId", target = "company")
-    @Mapping(source = "departmentId", target = "department")
+    @Mapping(source = "companyId", target = "company.id")
+    @Mapping(source = "departmentId", target = "department.id")
     public abstract Employee toEntity(CreateEmployeeRequest dto);
 
+    @Mapping(source = "companyId", target = "company.id")
+    @Mapping(source = "departmentId", target = "department.id")
+    public abstract void updateEmployee(UpdateEmployeeRequest updateEmployeeRequest,
+                                        @MappingTarget Employee employee);
 
-    protected Company mapCompany(Integer id) {
-        return companyRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Company not found with ID: " + id));
-    }
+    @Mapping(source = "department.name", target = "departmentName")
+    @Mapping(source = "company.name", target = "companyName")
+    public abstract FindEmployeesByIdentityNumber toFindEmployeesByIdentityNumber(Employee employee);
 
+    @Mapping(source = "department.name", target = "departmentName")
+    @Mapping(source = "company.name", target = "companyName")
+    public abstract FindEmployeesByFirstNameAndLastName toFindEmployeesByFirstNameAndLastName(Employee employee);
 
-    protected Department mapDepartment(Integer id) {
-        return departmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Department not found with ID: " + id));
-    }
+    @Mapping(source = "department.name", target = "departmentName")
+    @Mapping(source = "company.name", target = "companyName")
+    public abstract FindEmployeesByFirstName toFindEmployeesByFirstName(Employee employee);
 
+    @Mapping(source = "department.name", target = "departmentName")
+    @Mapping(source = "company.name", target = "companyName")
+    public abstract FindEmployeesByLastName toFindEmployeesByLastName(Employee employee);
 
-    @Autowired
-    protected CompanyRepository companyRepository;
+    @Mapping(source = "department.name", target = "departmentName")
+    @Mapping(source = "company.name", target = "companyName")
+    public abstract FindEmployeesByCompanyIdAndDepartmentId toFindEmployeesByCompanyIdAndDepartmentId(Employee employee);
 
-    @Autowired
-    protected DepartmentRepository departmentRepository;
+    @Mapping(source = "department.name", target = "departmentName")
+    @Mapping(source = "company.name", target = "companyName")
+    public abstract GetAllEmployeeResponse toGetAllEmployeeResponse(Employee employee);
+
+    @Mapping(source = "department.name", target = "departmentName")
+    @Mapping(source = "company.name", target = "companyName")
+    public abstract GetByIdEmployeeResponse toGetByIdEmployeeResponse(Employee employee);
+
+    @Mapping(source = "department.name", target = "departmentName")
+    @Mapping(source = "company.name", target = "companyName")
+    public abstract FindEmployeesByDepartmentResponse toFindEmployeesByDepartmentResponse(Employee employee);
+
+    @Mapping(source = "department.name", target = "departmentName")
+    @Mapping(source = "company.name", target = "companyName")
+    public abstract FindEmployeesByCompanyResponse toFindEmployeesByCompanyResponse(Employee employee);
 }

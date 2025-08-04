@@ -17,7 +17,6 @@ import com.personalApp.personal_service.helpers.exceptions.*;
 import com.personalApp.shared_model.enums.ChangeType;
 import com.personalApp.shared_model.events.EmployeeEvent;
 import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -31,36 +30,32 @@ public class EmployeeManager implements EmployeeService {
 
     private final DepartmentRepository departmentRepository;
     private final CompanyRepository companyRepository;
-    private final ModelMapperService modelMapperService;
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
     private final EmployeeKafkaProducer employeeKafkaProducer;
 
-
     public List<GetAllEmployeeResponse> getAll() {
-
         List<Employee> employees = employeeRepository.findAll();
 
         return employees.stream()
-                .map(employee -> modelMapperService.forResponse()
-                        .map(employee, GetAllEmployeeResponse.class))
+                .map(employeeMapper::toGetAllEmployeeResponse)
                 .sorted(Comparator.comparing(GetAllEmployeeResponse::getId))
                 .toList();
     }
 
     public GetByIdEmployeeResponse getById(int id) {
         var employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employee not found with id:" + id));
+                .orElseThrow(() -> new EmployeeNotFoundByIdException(id));
 
-        return modelMapperService.forResponse().map(employee, GetByIdEmployeeResponse.class);
+        return employeeMapper.toGetByIdEmployeeResponse(employee);
     }
 
     @Override
     public void add(CreateEmployeeRequest createEmployeeRequest) {
         var department = departmentRepository.findById(createEmployeeRequest.getDepartmentId())
-                .orElseThrow(() -> new RuntimeException("Department not found"));
+                .orElseThrow(() -> new DepartmentNotFoundException(createEmployeeRequest.getDepartmentId()));
         var company = companyRepository.findById(createEmployeeRequest.getCompanyId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+                .orElseThrow(() -> new CompanyNotFoundException(createEmployeeRequest.getCompanyId()));
         ValidationHelper.validateDepartmentBelongsToCompany(department, company);
 
         Optional<Employee> existing = employeeRepository
@@ -70,65 +65,125 @@ public class EmployeeManager implements EmployeeService {
         }
 
         var employee = employeeMapper.toEntity(createEmployeeRequest);
-
         employee.setDepartment(department);
         employee.setCompany(company);
-
 
         employeeRepository.save(employee);
     }
 
-
     public void update(UpdateEmployeeRequest updateEmployeeRequest) {
-
         Employee existingEmployee = employeeRepository.findById(updateEmployeeRequest.getId())
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new EmployeeNotFoundByIdException(updateEmployeeRequest.getId()));
 
-        if (updateEmployeeRequest.getFirstName() != null && !updateEmployeeRequest.getFirstName().isBlank())
-            existingEmployee.setFirstName(updateEmployeeRequest.getFirstName());
-
-        if (updateEmployeeRequest.getLastName() != null && !updateEmployeeRequest.getLastName().isBlank())
-            existingEmployee.setLastName(updateEmployeeRequest.getLastName());
-
-        if (updateEmployeeRequest.getIdentityNumber() != null && !updateEmployeeRequest.getIdentityNumber().isBlank())
-            existingEmployee.setIdentityNumber(updateEmployeeRequest.getIdentityNumber());
-
-        if (updateEmployeeRequest.getEmail() != null && !updateEmployeeRequest.getEmail().isBlank())
-            existingEmployee.setEmail(updateEmployeeRequest.getEmail());
-
-        if (updateEmployeeRequest.getPhoneNumber() != null && !updateEmployeeRequest.getPhoneNumber().isBlank())
-            existingEmployee.setPhoneNumber(updateEmployeeRequest.getPhoneNumber());
-
-        if (updateEmployeeRequest.getAddress() != null && !updateEmployeeRequest.getAddress().isBlank())
-            existingEmployee.setAddress(updateEmployeeRequest.getAddress());
-
-        if (updateEmployeeRequest.getGender() != null && !updateEmployeeRequest.getGender().isBlank())
-            existingEmployee.setGender(updateEmployeeRequest.getGender());
-
-        if (updateEmployeeRequest.getSalary() != null)
-            existingEmployee.setSalary(updateEmployeeRequest.getSalary());
-
-        if (updateEmployeeRequest.getPosition() != null && !updateEmployeeRequest.getPosition().isBlank())
-            existingEmployee.setPosition(updateEmployeeRequest.getPosition());
-
-        if (updateEmployeeRequest.getSeniority() != null)
-            existingEmployee.setSeniority(updateEmployeeRequest.getSeniority());
-
-        if (updateEmployeeRequest.getDepartmentId() != null && updateEmployeeRequest.getDepartmentId() > 0) {
-            Department dept = departmentRepository.findById(updateEmployeeRequest.getDepartmentId())
-                    .orElseThrow(() -> new RuntimeException("Department not found."));
-            existingEmployee.setDepartment(dept);
-        }
-
-        if (updateEmployeeRequest.getCompanyId() != null && updateEmployeeRequest.getCompanyId() > 0) {
-            Company comp = companyRepository.findById(updateEmployeeRequest.getCompanyId())
-                    .orElseThrow(() -> new RuntimeException("Company not found."));
-            existingEmployee.setCompany(comp);
-        }
-
-
+        employeeMapper.updateEmployee(updateEmployeeRequest, existingEmployee);
         employeeRepository.save(existingEmployee);
+        EmployeeEvent employeeEvent = createEmployeeEvent(existingEmployee);
 
+        employeeKafkaProducer.sendMessage(employeeEvent);
+    }
+
+    public void delete(int id) {
+        employeeRepository.deleteById(id);
+    }
+
+    @Override
+    public FindEmployeesByIdentityNumber findByIdentityNumber(String identityNumber) {
+        Employee employee = employeeRepository.findByIdentityNumber(identityNumber)
+                .orElseThrow(() -> new EmployeeIdentityNotFoundException(identityNumber));
+
+        return employeeMapper.toFindEmployeesByIdentityNumber(employee);
+    }
+
+    @Override
+    public List<FindEmployeesByDepartmentResponse> findEmployeesByDepartmentId(int departmentId) {
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new DepartmentNotFoundException(departmentId));
+
+        List<Employee> employees = employeeRepository.findEmployeesByDepartment(department);
+
+        if (employees.isEmpty()) {
+            throw new NoEmployeesInDepartmentException(departmentId);
+        }
+
+        return employees.stream()
+                .map(employeeMapper::toFindEmployeesByDepartmentResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FindEmployeesByCompanyResponse> findEmployeesByCompanyId(int companyId){
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(()-> new CompanyNotFoundException(companyId));
+
+        List<Employee> employees = employeeRepository.findEmployeesByCompany(company);
+
+        if(employees.isEmpty()){
+            throw new NoEmployeesInCompanyException(companyId);
+        }
+
+        return employees.stream()
+                .map(employeeMapper::toFindEmployeesByCompanyResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FindEmployeesByCompanyIdAndDepartmentId> findEmployeesByCompanyIdAndDepartmentId(int companyId, int departmentId) {
+        companyRepository.findById(companyId)
+                .orElseThrow(()-> new CompanyNotFoundException(companyId));
+        departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new DepartmentNotFoundException(departmentId));
+
+        List<Employee> employees = employeeRepository.findByCompanyIdAndDepartmentId(companyId, departmentId);
+
+        if(employees.isEmpty()){
+            throw new EmployeeNotFoundByCompanyAndDepartmentException(companyId, departmentId);
+        }
+
+        return employees.stream()
+                .map(employeeMapper::toFindEmployeesByCompanyIdAndDepartmentId)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FindEmployeesByFirstName> findEmployeesByFirstName(String firstName){
+        List<Employee> employees = employeeRepository.findEmployeesByFirstName(firstName);
+
+        if(employees.isEmpty()){
+            throw new EmployeeNotFoundByFirstNameException(firstName);
+        }
+
+        return employees.stream()
+                .map(employeeMapper::toFindEmployeesByFirstName)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FindEmployeesByLastName> findEmployeesByLastName(String lastName){
+        List<Employee> employees = employeeRepository.findEmployeesByLastName(lastName);
+
+        if (employees.isEmpty()){
+            throw new EmployeeNotFoundByLastNameException(lastName);
+        }
+
+        return employees.stream()
+                .map(employeeMapper::toFindEmployeesByLastName)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FindEmployeesByFirstNameAndLastName> findByFirstNameAndLastName(String firstName, String lastName) {
+        List<Employee> employees = employeeRepository.findByFirstNameAndLastName(firstName,lastName);
+
+        if(employees.isEmpty()){
+            throw new EmployeeNotFoundByFirstNameAndLastNameException(firstName, lastName);
+        }
+
+        return employees.stream()
+                .map(employeeMapper::toFindEmployeesByFirstNameAndLastName)
+                .collect(Collectors.toList());
+    }
+
+    private static EmployeeEvent createEmployeeEvent(Employee existingEmployee) {
         EmployeeEvent employeeEvent = new EmployeeEvent();
         employeeEvent.setId(existingEmployee.getId());
         employeeEvent.setIdentityNumber(existingEmployee.getIdentityNumber());
@@ -144,67 +199,6 @@ public class EmployeeManager implements EmployeeService {
         employeeEvent.setChangeType(ChangeType.UPDATE);
         employeeEvent.setDepartmentId(existingEmployee.getDepartment().getId());
         employeeEvent.setCompanyId(existingEmployee.getCompany().getId());
-
-        employeeKafkaProducer.sendMessage(employeeEvent);
+        return employeeEvent;
     }
-
-    public void delete(int id) {
-
-        employeeRepository.deleteById(id);
-    }
-
-    @Override
-    public FindEmployeesByIdentityNumber findByIdentityNumber(String identityNumber) {
-        var employee = employeeRepository.findByIdentityNumber(identityNumber)
-                .orElseThrow(() -> new RuntimeException("Employee not found with identity number: " + identityNumber));
-
-        return modelMapperService.forResponse().map(employee, FindEmployeesByIdentityNumber.class);
-    }
-
-
-    @Override
-    public List<FindEmployeesByDepartmentResponse> findEmployeesByDepartmentId(int departmentId) {
-        Department department = departmentRepository.findById(departmentId)
-                .orElseThrow(() -> new DepartmentNotFoundException(departmentId));
-
-        List<Employee> employees = employeeRepository.findEmployeesByDepartment(department);
-
-        if (employees.isEmpty()) {
-            throw new NoEmployeesInDepartmentException(departmentId);
-        }
-
-        ModelMapper modelMapper = modelMapperService.forResponse();
-        return employees.stream().
-                map(employee -> modelMapper.map(employee, FindEmployeesByDepartmentResponse.class)).
-                collect(Collectors.toList());
-    }
-
-    @Override
-    public List<FindEmployeesByCompanyResponse> findEmployeesByCompanyId(int companyId){
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(()-> new CompanyNotFoundException(companyId));
-
-        List<Employee> employees = employeeRepository.findEmployeesByCompany(company);
-
-        if(employees.isEmpty()){
-            throw new NoEmployeesInCompanyException(companyId);
-        }
-
-        ModelMapper modelMapper = modelMapperService.forResponse();
-        return employees.stream()
-                .map(employee -> modelMapper.map(employee,FindEmployeesByCompanyResponse.class))
-                .collect(Collectors.toList());
-    }
-
-
-    @Override
-    public List<FindEmployeesByFirstNameAndLastName> findByFirstNameAndLastName(String firstName, String lastName) {
-        List<Employee> employees = employeeRepository.findByFirstNameAndLastName(firstName,lastName)
-                .orElseThrow(()-> new RuntimeException("Employee not found with firstname:" +firstName+ "and lastname" +lastName));
-
-        return employees.stream()
-                .map(employee->modelMapperService.forResponse().map(employee, FindEmployeesByFirstNameAndLastName.class))
-                .collect(Collectors.toList());
-    }
-
 }

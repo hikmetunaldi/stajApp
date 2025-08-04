@@ -5,8 +5,13 @@ import com.personalApp.personal_service.business.requests.CreateCompanyRequest;
 import com.personalApp.personal_service.business.requests.UpdateCompanyRequest;
 import com.personalApp.personal_service.business.responses.GetAllCompanyResponse;
 import com.personalApp.personal_service.business.responses.GetByIdCompanyResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,34 +20,36 @@ import java.util.List;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/companies")
+@Tag(name = "Company", description = "Company management APIs")
+@Validated
 public class CompanyController {
 
     private CompanyService companyService;
 
     @GetMapping
-    public List<GetAllCompanyResponse> getALL() {
+    public List<GetAllCompanyResponse> getAll() {
         return companyService.getAll();
     }
 
     @GetMapping("/{id}")
-    public GetByIdCompanyResponse getById(@PathVariable int id) {
+    public GetByIdCompanyResponse getById(
+            @PathVariable @Min(1) @NotNull int id) {
         return companyService.getById(id);
     }
 
-
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
-    public void add(@RequestBody CreateCompanyRequest createCompanyRequest) {
+    public void add(@RequestBody @Valid CreateCompanyRequest createCompanyRequest) {
         companyService.add(createCompanyRequest);
     }
 
     @PutMapping
-    public void update(@RequestBody UpdateCompanyRequest updateCompanyRequest) {
+    public void update(@RequestBody @Valid UpdateCompanyRequest updateCompanyRequest) {
         companyService.update(updateCompanyRequest);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id) {
+    public void delete(@PathVariable @Min(1) @NotNull int id) {
         companyService.delete(id);
     }
 

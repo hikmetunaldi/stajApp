@@ -5,8 +5,13 @@ import com.personalApp.personal_service.business.requests.CreateDepartmentReques
 import com.personalApp.personal_service.business.requests.UpdateDepartmentRequest;
 import com.personalApp.personal_service.business.responses.GetAllDepartmentResponse;
 import com.personalApp.personal_service.business.responses.GetByIdDepartmentResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +20,8 @@ import java.util.List;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/departments")
+@Tag(name = "Department", description = "Department management APIs")
+@Validated
 public class DepartmentController {
 
     private DepartmentService departmentService;
@@ -25,23 +32,24 @@ public class DepartmentController {
     }
 
     @GetMapping("/{id}")
-    public GetByIdDepartmentResponse getById(@PathVariable int id) {
+    public GetByIdDepartmentResponse getById(
+            @PathVariable @Min(1) @NotNull int id) {
         return departmentService.getById(id);
     }
 
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
-    public void add(@RequestBody CreateDepartmentRequest createDepartmentRequest) {
+    public void add(@RequestBody @Valid CreateDepartmentRequest createDepartmentRequest) {
         departmentService.add(createDepartmentRequest);
     }
 
     @PutMapping
-    public void update(@RequestBody UpdateDepartmentRequest updateDepartmentRequest) {
+    public void update(@RequestBody @Valid UpdateDepartmentRequest updateDepartmentRequest) {
         departmentService.update(updateDepartmentRequest);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id) {
+    public void delete(@PathVariable @Min(1) @NotNull int id) {
         departmentService.delete(id);
     }
 

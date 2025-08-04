@@ -34,6 +34,7 @@ public class CompanyManager implements CompanyService {
         return modelMapperService.forResponse().map(company, GetByIdCompanyResponse.class);
     }
 
+    @Override
     public void add(CreateCompanyRequest createCompanyRequest) {
         Company company = this.modelMapperService.forRequest().map(createCompanyRequest, Company.class);
         companyRepository.save(company);
@@ -48,10 +49,4 @@ public class CompanyManager implements CompanyService {
     public void delete(int id) {
         companyRepository.deleteById(id);
     }
-
-    @Override
-    public Company getCompanyById(int id) {
-        return companyRepository.findById(id).orElseThrow();
-    }
-
 }

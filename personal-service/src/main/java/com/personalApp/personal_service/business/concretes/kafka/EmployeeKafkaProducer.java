@@ -14,7 +14,6 @@ public class EmployeeKafkaProducer implements EmployeeKafkaProducerService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmployeeKafkaProducer.class);
 
-
     private final KafkaTemplate<String, EmployeeEvent> kafkaTemplate;
     private final String topicName = "employee-events";
 

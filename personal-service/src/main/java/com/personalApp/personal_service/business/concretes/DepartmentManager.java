@@ -6,10 +6,10 @@ import com.personalApp.personal_service.business.requests.UpdateDepartmentReques
 import com.personalApp.personal_service.business.responses.GetAllDepartmentResponse;
 import com.personalApp.personal_service.business.responses.GetByIdDepartmentResponse;
 import com.personalApp.personal_service.core.utilities.mappers.DepartmentMapper;
-import com.personalApp.personal_service.core.utilities.mappers.ModelMapperService;
 import com.personalApp.personal_service.dataAccess.abstracts.CompanyRepository;
 import com.personalApp.personal_service.dataAccess.abstracts.DepartmentRepository;
 import com.personalApp.personal_service.entities.concretes.Department;
+import com.personalApp.personal_service.helpers.exceptions.CompanyNotFoundException;
 import com.personalApp.personal_service.helpers.exceptions.DepartmentNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,54 +17,51 @@ import org.springframework.stereotype.Service;
 import java.util.Comparator;
 import java.util.List;
 
-
 @Service
 @AllArgsConstructor
 public class DepartmentManager implements DepartmentService {
 
     private final CompanyRepository companyRepository;
-    private final ModelMapperService modelMapperService;
     private final DepartmentRepository departmentRepository;
     private final DepartmentMapper departmentMapper;
 
     @Override
     public List<GetAllDepartmentResponse> getAll() {
         List<Department> departments = departmentRepository.findAll();
-        return departments.stream().map(Department -> modelMapperService.forResponse()
-                        .map(Department, GetAllDepartmentResponse.class))
-                .sorted(Comparator.comparing(GetAllDepartmentResponse::getId)).toList();
+
+        return departments.stream()
+                .map(departmentMapper::toGetAllDepartmentResponse)
+                .sorted(Comparator.comparing(GetAllDepartmentResponse::getId))
+                .toList();
     }
 
-
     public GetByIdDepartmentResponse getById(int id) {
-        Department department = departmentRepository.findById(id).orElseThrow(() -> new DepartmentNotFoundException(id));
+        Department department = departmentRepository.findById(id)
+                .orElseThrow(() -> new DepartmentNotFoundException(id));
 
-        return modelMapperService.forResponse().map(department, GetByIdDepartmentResponse.class);
+        return departmentMapper.toGetByIdDepartmentResponse(department);
     }
 
     @Override
     public void add(CreateDepartmentRequest createDepartmentRequest) {
-        companyRepository.findById(createDepartmentRequest.getCompanyId())
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+        var company = companyRepository.findById(createDepartmentRequest.getCompanyId())
+                .orElseThrow(() -> new CompanyNotFoundException(createDepartmentRequest.getCompanyId()));
+
         var department = departmentMapper.toEntity(createDepartmentRequest);
+        department.setCompany(company);
 
         departmentRepository.save(department);
     }
 
     public void update(UpdateDepartmentRequest updateDepartmentRequest) {
-        Department department = modelMapperService.forRequest()
-                .map(updateDepartmentRequest, Department.class);
-        departmentRepository.save(department);
+        Department existingDepartment = departmentRepository.findById(updateDepartmentRequest.getId())
+                .orElseThrow(() -> new DepartmentNotFoundException(updateDepartmentRequest.getId()));
+
+        departmentMapper.updateDepartment(updateDepartmentRequest, existingDepartment);
+        departmentRepository.save(existingDepartment);
     }
 
     public void delete(int id) {
-
         departmentRepository.deleteById(id);
     }
-
-    @Override
-    public Department getDepartmentById(int id) {
-        return departmentRepository.findById(id).orElseThrow(() -> new DepartmentNotFoundException(id));
-    }
-
 }

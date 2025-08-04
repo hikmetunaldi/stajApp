@@ -18,6 +18,7 @@ public class EmployeeKafkaConsumerManager implements EmployeeKafkaConsumerServic
 
     private final MailService mailService;
 
+
     @KafkaListener(
             topics = "employee-events",
             groupId = "notification-group",

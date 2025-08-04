@@ -1,5 +1,8 @@
 package com.personalApp.personal_service.business.requests;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,7 +12,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateDepartmentRequest {
 
+    @Positive
     private int id;
+
+    @Size(min = 2, max = 50)
     private String name;
+
+    @Positive
     private int companyId;
 }

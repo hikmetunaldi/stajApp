@@ -1,9 +1,8 @@
 package com.personalApp.personal_service.business.requests;
 
+import com.personalApp.shared_model.enums.Gender;
 import com.personalApp.shared_model.enums.Seniority;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,38 +12,37 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateEmployeeRequest {
 
-    @NotNull
     @NotBlank
+    @Size(min = 2, max = 50)
     private String firstName;
 
-    @NotNull
     @NotBlank
+    @Size(min = 2, max = 50)
     private String lastName;
 
-    @NotNull
     @NotBlank
     @Size(min = 11, max = 11)
     private String identityNumber;
 
-    @NotNull
     @NotBlank
+    @Email
     private String email;
 
-    @NotNull
     @NotBlank
     private String phoneNumber;
 
     private String address;
+    @Positive
     private double salary;
-    private String gender;
+
+    private Gender gender;
     private String position;
     private Seniority seniority;
 
-    @NotNull
+    @Positive
     private Integer departmentId;
 
-    @NotNull
+    @Positive
     private Integer companyId;
-
 
 }

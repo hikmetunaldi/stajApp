@@ -20,5 +20,4 @@ public interface DepartmentService {
 
     void delete(int id);
 
-    Department getDepartmentById(int id);
 }
