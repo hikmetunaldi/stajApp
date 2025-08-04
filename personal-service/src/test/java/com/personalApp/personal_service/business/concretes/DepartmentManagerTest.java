@@ -2,13 +2,14 @@ package com.personalApp.personal_service.business.concretes;
 
 import com.personalApp.personal_service.business.requests.CreateDepartmentRequest;
 import com.personalApp.personal_service.business.requests.UpdateDepartmentRequest;
+import com.personalApp.personal_service.business.responses.GetAllDepartmentResponse;
 import com.personalApp.personal_service.business.responses.GetByIdDepartmentResponse;
 import com.personalApp.personal_service.core.utilities.mappers.DepartmentMapper;
-import com.personalApp.personal_service.core.utilities.mappers.ModelMapperService;
 import com.personalApp.personal_service.dataAccess.abstracts.CompanyRepository;
 import com.personalApp.personal_service.dataAccess.abstracts.DepartmentRepository;
 import com.personalApp.personal_service.entities.concretes.Company;
 import com.personalApp.personal_service.entities.concretes.Department;
+import com.personalApp.personal_service.helpers.exceptions.CompanyNotFoundException;
 import com.personalApp.personal_service.helpers.exceptions.DepartmentNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,19 +35,17 @@ class DepartmentManagerTest {
     @Mock
     CompanyRepository companyRepository;
     @Mock
-    ModelMapperService modelMapperService;
-    @Mock
-    ModelMapper modelMapper;
-    @Mock
     DepartmentMapper departmentMapper;
 
     @Test
     @DisplayName("GetAll - Success: Departments successfully brought")
     void getAll() {
         List<Department> mockDepartments = createDummyDepartmentList();
+        List<GetAllDepartmentResponse> mockResponses = createDummyGetAllDepartmentResponseList();
 
         when(departmentRepository.findAll()).thenReturn(mockDepartments);
-        when(modelMapperService.forResponse()).thenReturn(new ModelMapper());
+        when(departmentMapper.toGetAllDepartmentResponse(mockDepartments.get(0))).thenReturn(mockResponses.get(0));
+        when(departmentMapper.toGetAllDepartmentResponse(mockDepartments.get(1))).thenReturn(mockResponses.get(1));
 
         var response = departmentManager.getAll();
 
@@ -60,7 +58,7 @@ class DepartmentManagerTest {
         assertEquals("HR Department", response.get(1).getName());
 
         verify(departmentRepository, times(1)).findAll();
-        verify(modelMapperService, times(2)).forResponse();
+        verify(departmentMapper, times(2)).toGetAllDepartmentResponse(any(Department.class));
     }
 
     @Test
@@ -74,7 +72,7 @@ class DepartmentManagerTest {
         assertTrue(response.isEmpty());
 
         verify(departmentRepository, times(1)).findAll();
-        verify(modelMapperService, never()).forResponse();
+        verify(departmentMapper, never()).toGetAllDepartmentResponse(any(Department.class));
     }
 
     @Test
@@ -85,8 +83,7 @@ class DepartmentManagerTest {
         GetByIdDepartmentResponse expectedResponse = generateDummyGetByIdDepartmentResponse(departmentId);
 
         when(departmentRepository.findById(departmentId)).thenReturn(Optional.of(mockDepartment));
-        when(modelMapperService.forResponse()).thenReturn(modelMapper);
-        when(modelMapper.map(mockDepartment, GetByIdDepartmentResponse.class)).thenReturn(expectedResponse);
+        when(departmentMapper.toGetByIdDepartmentResponse(mockDepartment)).thenReturn(expectedResponse);
 
         GetByIdDepartmentResponse actualResponse = departmentManager.getById(departmentId);
 
@@ -95,8 +92,7 @@ class DepartmentManagerTest {
         assertEquals("IT Department", actualResponse.getName());
 
         verify(departmentRepository, times(1)).findById(departmentId);
-        verify(modelMapperService, times(1)).forResponse();
-        verify(modelMapper, times(1)).map(mockDepartment, GetByIdDepartmentResponse.class);
+        verify(departmentMapper, times(1)).toGetByIdDepartmentResponse(mockDepartment);
     }
 
     @Test
@@ -114,8 +110,7 @@ class DepartmentManagerTest {
         assertNotNull(exception);
 
         verify(departmentRepository, times(1)).findById(departmentId);
-        verify(modelMapperService, never()).forResponse();
-        verify(modelMapper, never()).map(any(), any());
+        verify(departmentMapper, never()).toGetByIdDepartmentResponse(any(Department.class));
     }
 
     @Test
@@ -127,28 +122,28 @@ class DepartmentManagerTest {
 
         when(companyRepository.findById(request.getCompanyId())).thenReturn(Optional.of(mockCompany));
         when(departmentMapper.toEntity(request)).thenReturn(departmentToSave);
-        when(departmentRepository.save(departmentToSave)).thenReturn(departmentToSave);
+        when(departmentRepository.save(any(Department.class))).thenReturn(departmentToSave);
 
         assertDoesNotThrow(() -> departmentManager.add(request));
 
         verify(companyRepository, times(1)).findById(request.getCompanyId());
         verify(departmentMapper, times(1)).toEntity(request);
-        verify(departmentRepository, times(1)).save(departmentToSave);
+        verify(departmentRepository, times(1)).save(any(Department.class));
     }
 
     @Test
-    @DisplayName("Add - Should throw RuntimeException when company not found")
-    void add_ShouldThrowRuntimeException_WhenCompanyNotFound() {
+    @DisplayName("Add - Should throw CompanyNotFoundException when company not found")
+    void add_ShouldThrowCompanyNotFoundException_WhenCompanyNotFound() {
         CreateDepartmentRequest request = getCreateDepartmentRequest();
 
         when(companyRepository.findById(request.getCompanyId())).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
+        CompanyNotFoundException exception = assertThrows(
+                CompanyNotFoundException.class,
                 () -> departmentManager.add(request)
         );
 
-        assertEquals("Company not found", exception.getMessage());
+        assertEquals("Company not found with id:" + request.getCompanyId(), exception.getMessage());
 
         verify(companyRepository, times(1)).findById(request.getCompanyId());
         verify(departmentMapper, never()).toEntity(any());
@@ -159,17 +154,17 @@ class DepartmentManagerTest {
     @DisplayName("Update - Success: Department updated successfully")
     void update() {
         UpdateDepartmentRequest request = getUpdateDepartmentRequest();
-        Department mappedDepartment = getUpdatedDepartment();
+        Department existingDepartment = getUpdatedDepartment();
 
-        when(modelMapperService.forRequest()).thenReturn(modelMapper);
-        when(modelMapper.map(request, Department.class)).thenReturn(mappedDepartment);
-        when(departmentRepository.save(mappedDepartment)).thenReturn(mappedDepartment);
+        when(departmentRepository.findById(request.getId())).thenReturn(Optional.of(existingDepartment));
+        doNothing().when(departmentMapper).updateDepartment(request, existingDepartment);
+        when(departmentRepository.save(existingDepartment)).thenReturn(existingDepartment);
 
         assertDoesNotThrow(() -> departmentManager.update(request));
 
-        verify(modelMapperService, times(1)).forRequest();
-        verify(modelMapper, times(1)).map(request, Department.class);
-        verify(departmentRepository, times(1)).save(mappedDepartment);
+        verify(departmentRepository, times(1)).findById(request.getId());
+        verify(departmentMapper, times(1)).updateDepartment(request, existingDepartment);
+        verify(departmentRepository, times(1)).save(existingDepartment);
     }
 
     @Test
@@ -196,6 +191,22 @@ class DepartmentManagerTest {
         departments.add(department2);
 
         return departments;
+    }
+
+    private List<GetAllDepartmentResponse> createDummyGetAllDepartmentResponseList() {
+        List<GetAllDepartmentResponse> responses = new ArrayList<>();
+
+        GetAllDepartmentResponse response1 = new GetAllDepartmentResponse();
+        response1.setId(1);
+        response1.setName("IT Department");
+        responses.add(response1);
+
+        GetAllDepartmentResponse response2 = new GetAllDepartmentResponse();
+        response2.setId(2);
+        response2.setName("HR Department");
+        responses.add(response2);
+
+        return responses;
     }
 
     private static Department generateDummyDepartment(int departmentId) {

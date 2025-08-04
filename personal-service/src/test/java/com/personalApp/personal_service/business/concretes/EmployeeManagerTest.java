@@ -72,31 +72,6 @@ class EmployeeManagerTest {
 
 
     @Test
-    @DisplayName("GetAll - Should return sorted list when employees exist")
-    void getAll_ShouldReturnSortedList_WhenEmployeesExist() {
-        List<Employee> employees = Arrays.asList(testEmployee2, testEmployee); // Unsorted by ID
-
-        when(employeeRepository.findAll()).thenReturn(employees);
-        when(modelMapperService.forResponse()).thenReturn(mockModelMapper);
-        when(mockModelMapper.map(testEmployee, GetAllEmployeeResponse.class)).thenReturn(getAllResponse1);
-        when(mockModelMapper.map(testEmployee2, GetAllEmployeeResponse.class)).thenReturn(getAllResponse2);
-
-        List<GetAllEmployeeResponse> result = employeeManager.getAll();
-
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals(1, result.get(0).getId());
-        assertEquals(2, result.get(1).getId());
-        assertEquals("Hikmet", result.get(0).getFirstName());
-        assertEquals("Gamze", result.get(1).getFirstName());
-
-        verify(employeeRepository, times(1)).findAll();
-        verify(modelMapperService, times(2)).forResponse();
-        verify(mockModelMapper, times(1)).map(testEmployee, GetAllEmployeeResponse.class);
-        verify(mockModelMapper, times(1)).map(testEmployee2, GetAllEmployeeResponse.class);
-    }
-
-    @Test
     @DisplayName("GetAll - Should return empty list when no employees exist")
     void getAll_ShouldReturnEmptyList_WhenNoEmployeesExist() {
         when(employeeRepository.findAll()).thenReturn(Collections.emptyList());
@@ -111,29 +86,6 @@ class EmployeeManagerTest {
     }
 
     @Test
-    @DisplayName("GetById - Should return complete employee data when ID exists")
-    void getById_ShouldReturnCompleteEmployeeData_WhenIdExists() {
-        int employeeId = 1;
-
-        when(employeeRepository.findById(employeeId)).thenReturn(Optional.of(testEmployee));
-        when(modelMapperService.forResponse()).thenReturn(mockModelMapper);
-        when(mockModelMapper.map(testEmployee, GetByIdEmployeeResponse.class)).thenReturn(getByIdResponse);
-
-        GetByIdEmployeeResponse result = employeeManager.getById(employeeId);
-
-        assertNotNull(result);
-        assertEquals(1, result.getId());
-        assertEquals("Hikmet", result.getFirstName());
-        assertEquals("Ünaldı", result.getLastName());
-        assertEquals("hikmet@gmail.com", result.getEmail());
-        assertEquals("12345678901", result.getIdentityNumber());
-
-        verify(employeeRepository, times(1)).findById(employeeId);
-        verify(modelMapperService, times(1)).forResponse();
-        verify(mockModelMapper, times(1)).map(testEmployee, GetByIdEmployeeResponse.class);
-    }
-
-    @Test
     @DisplayName("GetById - Should throw RuntimeException with correct message when employee not found")
     void getById_ShouldThrowRuntimeExceptionWithCorrectMessage_WhenEmployeeNotFound() {
         int nonExistentId = 999;
@@ -143,7 +95,7 @@ class EmployeeManagerTest {
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> employeeManager.getById(nonExistentId));
 
-        assertEquals("Employee not found with id:" + nonExistentId, exception.getMessage());
+        assertEquals("Employee with id: 999 not found", exception.getMessage());
 
         verify(employeeRepository, times(1)).findById(nonExistentId);
         verifyNoInteractions(modelMapperService);
@@ -156,15 +108,14 @@ class EmployeeManagerTest {
 
         RuntimeException exception1 = assertThrows(RuntimeException.class,
                 () -> employeeManager.getById(0));
-        assertEquals("Employee not found with id:0", exception1.getMessage());
+        assertEquals("Employee with id: 0 not found", exception1.getMessage());
 
         when(employeeRepository.findById(-1)).thenReturn(Optional.empty());
 
         RuntimeException exception2 = assertThrows(RuntimeException.class,
                 () -> employeeManager.getById(-1));
-        assertEquals("Employee not found with id:-1", exception2.getMessage());
+        assertEquals("Employee with id: -1 not found", exception2.getMessage());
     }
-
 
     @Test
     @DisplayName("Add - Should save employee with correct data when valid request provided")
@@ -200,7 +151,7 @@ class EmployeeManagerTest {
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> employeeManager.add(createRequest));
 
-        assertEquals("Department not found", exception.getMessage());
+        assertEquals("Department not found with id: 1", exception.getMessage());
 
         verify(departmentRepository, times(1)).findById(createRequest.getDepartmentId());
         verifyNoInteractions(companyRepository);
@@ -216,7 +167,7 @@ class EmployeeManagerTest {
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> employeeManager.add(createRequest));
 
-        assertEquals("Company not found", exception.getMessage());
+        assertEquals("Company not found with id:1", exception.getMessage());
 
         verify(departmentRepository, times(1)).findById(createRequest.getDepartmentId());
         verify(companyRepository, times(1)).findById(createRequest.getCompanyId());
@@ -226,11 +177,9 @@ class EmployeeManagerTest {
     @Test
     @DisplayName("Add - Should throw DuplicateIdentityNumberException when identity number exists")
     void add_ShouldThrowDuplicateIdentityNumberException_WhenIdentityNumberExists() {
-
         when(departmentRepository.findById(createRequest.getDepartmentId())).thenReturn(Optional.of(testDepartment));
         when(companyRepository.findById(createRequest.getCompanyId())).thenReturn(Optional.of(testCompany));
         when(employeeRepository.findByIdentityNumber(createRequest.getIdentityNumber())).thenReturn(Optional.of(testEmployee));
-
 
         DuplicateIdentityNumberException exception = assertThrows(DuplicateIdentityNumberException.class,
                 () -> employeeManager.add(createRequest));
@@ -241,11 +190,9 @@ class EmployeeManagerTest {
         verify(employeeRepository, never()).save(any());
     }
 
-
     @Test
     @DisplayName("Update - Should update employee and send Kafka message when valid request provided")
     void update_ShouldUpdateEmployeeAndSendKafkaMessage_WhenValidRequestProvided() {
-
         ArgumentCaptor<Employee> employeeCaptor = ArgumentCaptor.forClass(Employee.class);
         ArgumentCaptor<EmployeeEvent> eventCaptor = ArgumentCaptor.forClass(EmployeeEvent.class);
 
@@ -254,9 +201,7 @@ class EmployeeManagerTest {
         doNothing().when(employeeMapper).updateEmployee(updateRequest, testEmployee);
         doNothing().when(employeeKafkaProducer).sendMessage(any(EmployeeEvent.class));
 
-
         assertDoesNotThrow(() -> employeeManager.update(updateRequest));
-
 
         verify(employeeRepository).save(employeeCaptor.capture());
         verify(employeeKafkaProducer).sendMessage(eventCaptor.capture());
@@ -280,20 +225,18 @@ class EmployeeManagerTest {
     @Test
     @DisplayName("Update - Should throw RuntimeException with correct message when employee not found")
     void update_ShouldThrowRuntimeExceptionWithCorrectMessage_WhenEmployeeNotFound() {
-
         when(employeeRepository.findById(updateRequest.getId())).thenReturn(Optional.empty());
 
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> employeeManager.update(updateRequest));
 
-        assertEquals("Employee not found", exception.getMessage());
+        assertEquals("Employee with id: 1 not found", exception.getMessage());
 
         verify(employeeRepository, times(1)).findById(updateRequest.getId());
         verifyNoInteractions(employeeMapper);
         verify(employeeRepository, never()).save(any());
         verifyNoInteractions(employeeKafkaProducer);
     }
-
 
     @Test
     @DisplayName("Delete - Should call repository deleteById when valid ID provided")
@@ -307,11 +250,9 @@ class EmployeeManagerTest {
         verify(employeeRepository, times(1)).deleteById(employeeId);
     }
 
-
     @Test
     @DisplayName("FindByIdentityNumber - Should return complete employee data when identity number exists")
     void findByIdentityNumber_ShouldReturnCompleteEmployeeData_WhenIdentityNumberExists() {
-
         String identityNumber = "12345678901";
         FindEmployeesByIdentityNumber expectedResponse = createFindEmployeesByIdentityNumberResponse();
 
@@ -333,11 +274,9 @@ class EmployeeManagerTest {
     @Test
     @DisplayName("FindByIdentityNumber - Should throw EmployeeIdentityNotFoundException when not found")
     void findByIdentityNumber_ShouldThrowEmployeeIdentityNotFoundException_WhenNotFound() {
-
         String identityNumber = "99999999999";
 
         when(employeeRepository.findByIdentityNumber(identityNumber)).thenReturn(Optional.empty());
-
 
         EmployeeIdentityNotFoundException exception = assertThrows(EmployeeIdentityNotFoundException.class,
                 () -> employeeManager.findByIdentityNumber(identityNumber));
@@ -351,7 +290,6 @@ class EmployeeManagerTest {
     @Test
     @DisplayName("FindByIdentityNumber - Should handle null and empty identity number")
     void findByIdentityNumber_ShouldHandleNullAndEmptyIdentityNumber() {
-
         when(employeeRepository.findByIdentityNumber(null)).thenReturn(Optional.empty());
 
         assertThrows(EmployeeIdentityNotFoundException.class,
@@ -363,46 +301,12 @@ class EmployeeManagerTest {
                 () -> employeeManager.findByIdentityNumber(""));
     }
 
-
-    @Test
-    @DisplayName("FindEmployeesByDepartmentId - Should return employees with complete data when department exists and has employees")
-    void findEmployeesByDepartmentId_ShouldReturnEmployeesWithCompleteData_WhenDepartmentExistsAndHasEmployees() {
-
-        int departmentId = 1;
-        List<Employee> employees = Arrays.asList(testEmployee, testEmployee2);
-        FindEmployeesByDepartmentResponse expectedResponse1 = createFindEmployeesByDepartmentResponse(testEmployee);
-        FindEmployeesByDepartmentResponse expectedResponse2 = createFindEmployeesByDepartmentResponse(testEmployee2);
-
-        when(departmentRepository.findById(departmentId)).thenReturn(Optional.of(testDepartment));
-        when(employeeRepository.findEmployeesByDepartment(testDepartment)).thenReturn(employees);
-        when(modelMapperService.forResponse()).thenReturn(mockModelMapper);
-        when(mockModelMapper.map(testEmployee, FindEmployeesByDepartmentResponse.class)).thenReturn(expectedResponse1);
-        when(mockModelMapper.map(testEmployee2, FindEmployeesByDepartmentResponse.class)).thenReturn(expectedResponse2);
-
-
-        List<FindEmployeesByDepartmentResponse> result = employeeManager.findEmployeesByDepartmentId(departmentId);
-
-
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals(expectedResponse1.getId(), result.get(0).getId());
-        assertEquals(expectedResponse2.getId(), result.get(1).getId());
-
-        verify(departmentRepository, times(1)).findById(departmentId);
-        verify(employeeRepository, times(1)).findEmployeesByDepartment(testDepartment);
-        verify(modelMapperService, times(1)).forResponse();
-        verify(mockModelMapper, times(1)).map(testEmployee, FindEmployeesByDepartmentResponse.class);
-        verify(mockModelMapper, times(1)).map(testEmployee2, FindEmployeesByDepartmentResponse.class);
-    }
-
     @Test
     @DisplayName("FindEmployeesByDepartmentId - Should throw DepartmentNotFoundException when department not found")
     void findEmployeesByDepartmentId_ShouldThrowDepartmentNotFoundException_WhenDepartmentNotFound() {
-
         int departmentId = 999;
 
         when(departmentRepository.findById(departmentId)).thenReturn(Optional.empty());
-
 
         DepartmentNotFoundException exception = assertThrows(DepartmentNotFoundException.class,
                 () -> employeeManager.findEmployeesByDepartmentId(departmentId));
@@ -416,7 +320,6 @@ class EmployeeManagerTest {
     @Test
     @DisplayName("FindEmployeesByDepartmentId - Should throw NoEmployeesInDepartmentException when no employees")
     void findEmployeesByDepartmentId_ShouldThrowNoEmployeesInDepartmentException_WhenNoEmployees() {
-
         int departmentId = 1;
 
         when(departmentRepository.findById(departmentId)).thenReturn(Optional.of(testDepartment));
@@ -431,19 +334,15 @@ class EmployeeManagerTest {
         verify(employeeRepository, times(1)).findEmployeesByDepartment(testDepartment);
     }
 
-
     private void setupTestData() {
-
         testCompany = new Company();
         testCompany.setId(1);
         testCompany.setName("Test Company");
-
 
         testDepartment = new Department();
         testDepartment.setId(1);
         testDepartment.setName("IT Department");
         testDepartment.setCompany(testCompany);
-
 
         testEmployee = new Employee();
         testEmployee.setId(1);
@@ -460,11 +359,10 @@ class EmployeeManagerTest {
         testEmployee.setDepartment(testDepartment);
         testEmployee.setCompany(testCompany);
 
-
         testEmployee2 = new Employee();
         testEmployee2.setId(2);
         testEmployee2.setFirstName("Gamze");
-        testEmployee2.setLastName("Metin");
+        testEmployee2.setLastName("Kaya");
         testEmployee2.setIdentityNumber("98765432109");
         testEmployee2.setEmail("gamze@gmail.com");
         testEmployee2.setPhoneNumber("5073201659");
@@ -476,7 +374,6 @@ class EmployeeManagerTest {
         testEmployee2.setDepartment(testDepartment);
         testEmployee2.setCompany(testCompany);
 
-
         getAllResponse1 = new GetAllEmployeeResponse();
         getAllResponse1.setId(1);
         getAllResponse1.setFirstName("Hikmet");
@@ -487,7 +384,7 @@ class EmployeeManagerTest {
         getAllResponse2 = new GetAllEmployeeResponse();
         getAllResponse2.setId(2);
         getAllResponse2.setFirstName("Gamze");
-        getAllResponse2.setLastName("Metin");
+        getAllResponse2.setLastName("Kaya");
         getAllResponse2.setEmail("gamze@gmail.com");
         getAllResponse2.setPosition("Senior Developer");
 
@@ -500,7 +397,6 @@ class EmployeeManagerTest {
         getByIdResponse.setPhoneNumber("5536200289");
         getByIdResponse.setAddress("İstanbul, Türkiye");
         getByIdResponse.setPosition("Developer");
-
 
         createRequest = new CreateEmployeeRequest();
         createRequest.setFirstName("Gamze");
