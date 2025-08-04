@@ -182,41 +182,6 @@ class DepartmentManagerTest {
         verify(departmentRepository, times(1)).deleteById(departmentId);
     }
 
-//    @Test
-//    @DisplayName("GetDepartmentById - Success: Department entity found with valid ID successfully")
-//    void getDepartmentById() {
-//        int departmentId = 1;
-//        Department mockDepartment = generateDummyDepartment(departmentId);
-//
-//        when(departmentRepository.findById(departmentId)).thenReturn(Optional.of(mockDepartment));
-//
-//        Department actualDepartment = departmentManager.getDepartmentById(departmentId);
-//
-//        assertNotNull(actualDepartment);
-//        assertEquals(1, actualDepartment.getId());
-//        assertEquals("IT Department", actualDepartment.getName());
-//
-//        verify(departmentRepository, times(1)).findById(departmentId);
-//    }
-
-//    @Test
-//    @DisplayName("GetDepartmentById - Should throw DepartmentNotFoundException when department not found")
-//    void getDepartmentById_ShouldThrowDepartmentNotFoundException_WhenDepartmentNotFound() {
-//        int departmentId = 999;
-//
-//        when(departmentRepository.findById(departmentId)).thenReturn(Optional.empty());
-//
-//        DepartmentNotFoundException exception = assertThrows(
-//                DepartmentNotFoundException.class,
-//                () -> departmentManager.getDepartmentById(departmentId)
-//        );
-//
-//        assertNotNull(exception);
-//
-//        verify(departmentRepository, times(1)).findById(departmentId);
-//    }
-
-    // Helper methods for test data creation
     private List<Department> createDummyDepartmentList() {
         List<Department> departments = new ArrayList<>();
 
